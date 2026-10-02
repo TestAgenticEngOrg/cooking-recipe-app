@@ -7,12 +7,70 @@
   "appPath": "recipe-webapp",
   "entrypoint": "deployment/web-application",
   "exposure": "internet",
-  "dependencies": [
-    { "kind": "component", "name": "recipe-api", "description": "Create, edit, search and delete recipes; manage the meal plan and shopping list." },
-    { "kind": "component", "name": "recipe-import-agent", "description": "Extract a structured recipe draft from pasted text or a recipe URL for the Cook to review." },
-    { "kind": "platform-resource", "name": "cook-auth", "resourceType": "thunder-app" }
+  "stories": [
+    1,
+    2,
+    3,
+    4,
+    5,
+    6,
+    7,
+    8,
+    9,
+    10
   ],
   "description": "The single-page app a Cook uses to keep their recipe collection: create, browse, search, favorite and delete recipes; import a recipe via the agent and review the draft; plan meals for the week; and manage the generated shopping list. Holds no business data itself — everything is read from and written to recipe-api and recipe-import-agent.",
-  "stories": [1, 2, 3, 4, 5, 6, 7, 8, 9, 10],
-  "skillsPinned": ["wireframes", "react-webapp", "oxygen-ui-design-system", "thunder-authentication"]
+  "dependencies": [
+    {
+      "kind": "component",
+      "name": "recipe-api",
+      "description": "Create, edit, search and delete recipes; manage the meal plan and shopping list.",
+      "wiring": {
+        "endpoint": {
+          "component": "cooking-recipe-app-recipe-api",
+          "name": "http",
+          "visibility": "project",
+          "envBindings": {
+            "address": "RECIPE_API_URL"
+          }
+        }
+      }
+    },
+    {
+      "kind": "component",
+      "name": "recipe-import-agent",
+      "description": "Extract a structured recipe draft from pasted text or a recipe URL for the Cook to review.",
+      "wiring": {
+        "endpoint": {
+          "component": "cooking-recipe-app-recipe-import-agent",
+          "name": "http",
+          "visibility": "project",
+          "envBindings": {
+            "address": "RECIPE_IMPORT_AGENT_URL"
+          }
+        }
+      }
+    },
+    {
+      "kind": "platform-resource",
+      "name": "cook-auth",
+      "resourceType": "thunder-app",
+      "wiring": {
+        "ref": "cooking-recipe-ap-d9660326",
+        "envBindings": {
+          "client_id": "COOK_AUTH_CLIENT_ID",
+          "issuer": "COOK_AUTH_ISSUER",
+          "jwks_url": "COOK_AUTH_JWKS_URL",
+          "resource": "COOK_AUTH_RESOURCE",
+          "scopes": "COOK_AUTH_SCOPES"
+        }
+      }
+    }
+  ],
+  "skillsPinned": [
+    "wireframes",
+    "react-webapp",
+    "oxygen-ui-design-system",
+    "thunder-authentication"
+  ]
 }

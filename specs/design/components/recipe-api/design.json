@@ -7,11 +7,56 @@
   "appPath": "recipe-api",
   "entrypoint": "deployment/service",
   "exposure": "internet",
-  "dependencies": [
-    { "kind": "platform-resource", "name": "recipe-db", "resourceType": "postgres-cnpg" },
-    { "kind": "platform-resource", "name": "cook-auth", "resourceType": "thunder-app" }
+  "stories": [
+    1,
+    2,
+    3,
+    4,
+    7,
+    8,
+    9,
+    10
   ],
   "description": "Owns every Cook's recipes, tags, meal plan and shopping list. Exposes CRUD for recipes (with ingredients, steps, category, tags, favorite flag and an optional photo), weekly meal-plan entries, and shopping-list generation and check-off. Stores recipe rows in its dedicated Postgres database, scoped per Cook by the signed-in caller's identity. Does not extract recipes from text or URLs — that is the import agent's job; this service only persists what it is given.",
-  "stories": [1, 2, 3, 4, 7, 8, 9, 10],
-  "skillsPinned": ["openapi-conventions", "ballerina", "api-management", "thunder-authentication"]
+  "dependencies": [
+    {
+      "kind": "platform-resource",
+      "name": "recipe-db",
+      "resourceType": "postgres-cnpg",
+      "wiring": {
+        "ref": "cooking-recipe-ap-6fea5420",
+        "envBindings": {
+          "dbname": "RECIPE_DB_DBNAME",
+          "host": "RECIPE_DB_HOST",
+          "password": "RECIPE_DB_PASSWORD",
+          "port": "RECIPE_DB_PORT",
+          "user": "RECIPE_DB_USER"
+        }
+      }
+    },
+    {
+      "kind": "platform-resource",
+      "name": "cook-auth",
+      "resourceType": "thunder-app",
+      "wiring": {
+        "ref": "cooking-recipe-ap-d9660326",
+        "envBindings": {
+          "client_id": "COOK_AUTH_CLIENT_ID",
+          "issuer": "COOK_AUTH_ISSUER",
+          "jwks_url": "COOK_AUTH_JWKS_URL",
+          "resource": "COOK_AUTH_RESOURCE",
+          "scopes": "COOK_AUTH_SCOPES"
+        }
+      }
+    }
+  ],
+  "exposesAPI": {
+    "auth": "end-user-required"
+  },
+  "skillsPinned": [
+    "openapi-conventions",
+    "ballerina",
+    "api-management",
+    "thunder-authentication"
+  ]
 }
