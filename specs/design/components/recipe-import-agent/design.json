@@ -1,0 +1,16 @@
+{
+  "name": "recipe-import-agent",
+  "type": "ai-agent",
+  "version": "0.1.0",
+  "language": "TypeScript",
+  "buildpack": "docker",
+  "appPath": "recipe-import-agent",
+  "entrypoint": "deployment/ai-agent",
+  "exposure": "internet",
+  "dependencies": [
+    { "kind": "platform-resource", "name": "cook-auth", "resourceType": "thunder-app" }
+  ],
+  "description": "Extracts a structured recipe draft (title, ingredients, steps) from pasted recipe text or a recipe URL the Cook submits, for review before saving. Validates a submitted URL is reachable before attempting to fetch it. Holds no conversation memory beyond a single extraction turn and persists nothing itself — the Cook's webapp saves the reviewed draft to recipe-api.",
+  "stories": [5, 6],
+  "skillsPinned": ["agent-building"]
+}

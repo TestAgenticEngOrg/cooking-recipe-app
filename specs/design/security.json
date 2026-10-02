@@ -1,0 +1,52 @@
+{
+  "version": 3,
+  "permissions": [
+    {
+      "resource": "recipes",
+      "component": "recipe-api",
+      "description": "A Cook's recipe collection",
+      "actions": [
+        { "handle": "read", "description": "The caller's own recipes" },
+        { "handle": "create", "description": "Add a new recipe" },
+        { "handle": "update", "description": "Edit a recipe, favorite it, or attach a photo" },
+        { "handle": "delete", "description": "Remove a recipe" }
+      ]
+    },
+    {
+      "resource": "meal-plan",
+      "component": "recipe-api",
+      "description": "A Cook's weekly meal plan",
+      "actions": [
+        { "handle": "read", "description": "The caller's own meal plan" },
+        { "handle": "manage", "description": "Assign or remove a recipe on a day" }
+      ]
+    },
+    {
+      "resource": "shopping-list",
+      "component": "recipe-api",
+      "description": "A Cook's generated shopping list",
+      "actions": [
+        { "handle": "read", "description": "The caller's own shopping list" },
+        { "handle": "update", "description": "Check or uncheck an item" }
+      ]
+    }
+  ],
+  "groups": [],
+  "roles": [
+    {
+      "name": "Cook",
+      "description": "Keeps a private recipe collection, imports recipes via the agent, plans meals and shops from the generated list.",
+      "stories": [1, 2, 3, 4, 5, 6, 7, 8, 9, 10],
+      "grants": [
+        "recipes:read", "recipes:create", "recipes:update", "recipes:delete",
+        "meal-plan:read", "meal-plan:manage",
+        "shopping-list:read", "shopping-list:update"
+      ],
+      "enrolment": "self-service"
+    }
+  ],
+  "testUsers": [
+    { "username": "test-cook-1", "roles": ["Cook"] },
+    { "username": "test-cook-2", "roles": ["Cook"] }
+  ]
+}

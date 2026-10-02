@@ -1,0 +1,17 @@
+{
+  "name": "recipe-api",
+  "type": "service",
+  "version": "0.1.0",
+  "language": "Ballerina",
+  "buildpack": "docker",
+  "appPath": "recipe-api",
+  "entrypoint": "deployment/service",
+  "exposure": "internet",
+  "dependencies": [
+    { "kind": "platform-resource", "name": "recipe-db", "resourceType": "postgres-cnpg" },
+    { "kind": "platform-resource", "name": "cook-auth", "resourceType": "thunder-app" }
+  ],
+  "description": "Owns every Cook's recipes, tags, meal plan and shopping list. Exposes CRUD for recipes (with ingredients, steps, category, tags, favorite flag and an optional photo), weekly meal-plan entries, and shopping-list generation and check-off. Stores recipe rows in its dedicated Postgres database, scoped per Cook by the signed-in caller's identity. Does not extract recipes from text or URLs — that is the import agent's job; this service only persists what it is given.",
+  "stories": [1, 2, 3, 4, 7, 8, 9, 10],
+  "skillsPinned": ["openapi-conventions", "ballerina", "api-management", "thunder-authentication"]
+}

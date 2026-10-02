@@ -1,0 +1,18 @@
+title Cooking Recipe App
+
+component recipe-webapp as "Recipe Webapp" web-application
+component recipe-api as "Recipe API" service
+component recipe-import-agent as "Recipe Import Agent" ai-agent
+component recipe-db as "Recipe Database" database
+
+east cook-auth as "Thunder Auth" identity-server
+
+north -> recipe-webapp
+north -> recipe-import-agent
+
+recipe-webapp -> recipe-api
+recipe-webapp -> recipe-import-agent
+recipe-webapp -> cook-auth
+recipe-api -> cook-auth
+recipe-api -> recipe-db
+recipe-import-agent -> cook-auth

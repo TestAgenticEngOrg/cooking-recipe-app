@@ -1,0 +1,412 @@
+openapi: 3.0.3
+info:
+  title: Recipe API
+  version: 0.1.0
+  description: Owns a Cook's recipes, weekly meal plan and generated shopping list.
+servers:
+  - url: /
+security:
+  - oauth2: []
+components:
+  securitySchemes:
+    oauth2:
+      type: oauth2
+      flows:
+        authorizationCode:
+          authorizationUrl: /oauth2/authorize
+          tokenUrl: /oauth2/token
+          scopes:
+            recipes:read: The caller's own recipes
+            recipes:create: Add a new recipe
+            recipes:update: Edit a recipe, favorite it, or attach a photo
+            recipes:delete: Remove a recipe
+            meal-plan:read: The caller's own meal plan
+            meal-plan:manage: Assign or remove a recipe on a day
+            shopping-list:read: The caller's own shopping list
+            shopping-list:update: Check or uncheck an item, or regenerate the list
+  schemas:
+    Error:
+      type: object
+      required: [code, message]
+      properties:
+        code: { type: integer, description: HTTP or application error code }
+        message: { type: string, description: short human-readable label }
+        description: { type: string, description: detailed explanation }
+        moreInfo: { type: string, description: URI to documentation }
+    Recipe:
+      type: object
+      required: [id, title, category, ingredients, steps]
+      properties:
+        id: { type: string }
+        title: { type: string }
+        category: { type: string }
+        tags:
+          type: array
+          items: { type: string }
+        ingredients:
+          type: array
+          items: { type: string }
+          description: One free-form line per ingredient (quantity, unit, name)
+        steps:
+          type: array
+          items: { type: string }
+        photoUrl: { type: string, nullable: true }
+        isFavorite: { type: boolean, default: false }
+        sourceUrl: { type: string, nullable: true }
+        createdAt: { type: string, format: date-time }
+    RecipeInput:
+      type: object
+      required: [title, category, ingredients, steps]
+      properties:
+        title: { type: string }
+        category: { type: string }
+        tags:
+          type: array
+          items: { type: string }
+        ingredients:
+          type: array
+          items: { type: string }
+        steps:
+          type: array
+          items: { type: string }
+        isFavorite: { type: boolean }
+    MealPlanEntry:
+      type: object
+      required: [id, recipeId, plannedDate]
+      properties:
+        id: { type: string }
+        recipeId: { type: string }
+        recipeTitle: { type: string }
+        plannedDate: { type: string, format: date }
+    MealPlanEntryInput:
+      type: object
+      required: [recipeId, plannedDate]
+      properties:
+        recipeId: { type: string }
+        plannedDate: { type: string, format: date }
+    ShoppingListItem:
+      type: object
+      required: [id, recipeId, ingredientText, isChecked]
+      properties:
+        id: { type: string }
+        recipeId: { type: string }
+        recipeTitle: { type: string }
+        ingredientText: { type: string }
+        isChecked: { type: boolean }
+paths:
+  /me/recipes:
+    get:
+      operationId: listMyRecipes
+      summary: The caller's recipes, searchable by title, category or tag
+      security:
+        - oauth2: [recipes:read]
+      parameters:
+        - name: limit
+          in: query
+          schema: { type: integer, default: 20, maximum: 100 }
+        - name: offset
+          in: query
+          schema: { type: integer, default: 0 }
+        - name: q
+          in: query
+          schema: { type: string }
+          description: Search in title
+        - name: category
+          in: query
+          schema: { type: string }
+        - name: tag
+          in: query
+          schema: { type: string }
+      responses:
+        '200':
+          description: A page of the caller's recipes
+          content:
+            application/json:
+              schema:
+                type: object
+                required: [count, data]
+                properties:
+                  count: { type: integer }
+                  next: { type: string, nullable: true }
+                  previous: { type: string, nullable: true }
+                  data:
+                    type: array
+                    items: { $ref: '#/components/schemas/Recipe' }
+    post:
+      operationId: createMyRecipe
+      summary: Add a new recipe to the caller's collection
+      security:
+        - oauth2: [recipes:create]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: '#/components/schemas/RecipeInput' }
+      responses:
+        '201':
+          description: Recipe created
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/Recipe' }
+        '400':
+          description: Invalid recipe
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/Error' }
+  /me/recipes/{recipeId}:
+    parameters:
+      - name: recipeId
+        in: path
+        required: true
+        schema: { type: string }
+    get:
+      operationId: getMyRecipe
+      summary: The caller's recipe by id
+      security:
+        - oauth2: [recipes:read]
+      responses:
+        '200':
+          description: The recipe
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/Recipe' }
+        '404':
+          description: No such recipe for the caller
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/Error' }
+    put:
+      operationId: updateMyRecipe
+      summary: Edit a recipe, favorite it, or change its fields
+      security:
+        - oauth2: [recipes:update]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: '#/components/schemas/RecipeInput' }
+      responses:
+        '200':
+          description: Recipe updated
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/Recipe' }
+        '400':
+          description: Invalid recipe
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/Error' }
+        '404':
+          description: No such recipe for the caller
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/Error' }
+    delete:
+      operationId: deleteMyRecipe
+      summary: Remove a recipe from the caller's collection
+      security:
+        - oauth2: [recipes:delete]
+      responses:
+        '204':
+          description: Recipe deleted
+        '404':
+          description: No such recipe for the caller
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/Error' }
+  /me/recipes/{recipeId}/photo:
+    parameters:
+      - name: recipeId
+        in: path
+        required: true
+        schema: { type: string }
+    put:
+      operationId: setMyRecipePhoto
+      summary: Attach or replace the finished-meal photo on a recipe
+      security:
+        - oauth2: [recipes:update]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [photo]
+              properties:
+                photo:
+                  type: string
+                  format: byte
+                  description: Base64-encoded image data
+      responses:
+        '200':
+          description: Photo attached
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/Recipe' }
+        '400':
+          description: Invalid photo
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/Error' }
+        '404':
+          description: No such recipe for the caller
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/Error' }
+  /me/meal-plan:
+    get:
+      operationId: listMyMealPlan
+      summary: The caller's planned recipes by day
+      security:
+        - oauth2: [meal-plan:read]
+      parameters:
+        - name: limit
+          in: query
+          schema: { type: integer, default: 20, maximum: 100 }
+        - name: offset
+          in: query
+          schema: { type: integer, default: 0 }
+        - name: from
+          in: query
+          schema: { type: string, format: date }
+        - name: to
+          in: query
+          schema: { type: string, format: date }
+      responses:
+        '200':
+          description: A page of the caller's meal plan entries
+          content:
+            application/json:
+              schema:
+                type: object
+                required: [count, data]
+                properties:
+                  count: { type: integer }
+                  next: { type: string, nullable: true }
+                  previous: { type: string, nullable: true }
+                  data:
+                    type: array
+                    items: { $ref: '#/components/schemas/MealPlanEntry' }
+    post:
+      operationId: addMyMealPlanEntry
+      summary: Assign a recipe to a day on the caller's plan
+      security:
+        - oauth2: [meal-plan:manage]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: '#/components/schemas/MealPlanEntryInput' }
+      responses:
+        '201':
+          description: Entry added
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/MealPlanEntry' }
+        '400':
+          description: Invalid entry
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/Error' }
+        '404':
+          description: No such recipe for the caller
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/Error' }
+  /me/meal-plan/{entryId}:
+    parameters:
+      - name: entryId
+        in: path
+        required: true
+        schema: { type: string }
+    delete:
+      operationId: removeMyMealPlanEntry
+      summary: Remove a recipe from a day on the caller's plan
+      security:
+        - oauth2: [meal-plan:manage]
+      responses:
+        '204':
+          description: Entry removed
+        '404':
+          description: No such entry for the caller
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/Error' }
+  /me/shopping-list/generate:
+    post:
+      operationId: generateMyShoppingList
+      summary: Rebuild the caller's shopping list from their current meal plan, listed per recipe
+      security:
+        - oauth2: [shopping-list:update]
+      responses:
+        '200':
+          description: The regenerated shopping list
+          content:
+            application/json:
+              schema:
+                type: object
+                required: [count, data]
+                properties:
+                  count: { type: integer }
+                  data:
+                    type: array
+                    items: { $ref: '#/components/schemas/ShoppingListItem' }
+  /me/shopping-list:
+    get:
+      operationId: listMyShoppingList
+      summary: The caller's current shopping list
+      security:
+        - oauth2: [shopping-list:read]
+      parameters:
+        - name: limit
+          in: query
+          schema: { type: integer, default: 20, maximum: 100 }
+        - name: offset
+          in: query
+          schema: { type: integer, default: 0 }
+      responses:
+        '200':
+          description: A page of the caller's shopping list items
+          content:
+            application/json:
+              schema:
+                type: object
+                required: [count, data]
+                properties:
+                  count: { type: integer }
+                  next: { type: string, nullable: true }
+                  previous: { type: string, nullable: true }
+                  data:
+                    type: array
+                    items: { $ref: '#/components/schemas/ShoppingListItem' }
+  /me/shopping-list/{itemId}:
+    parameters:
+      - name: itemId
+        in: path
+        required: true
+        schema: { type: string }
+    patch:
+      operationId: updateMyShoppingListItem
+      summary: Check or uncheck a shopping list item
+      security:
+        - oauth2: [shopping-list:update]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [isChecked]
+              properties:
+                isChecked: { type: boolean }
+      responses:
+        '200':
+          description: Item updated
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/ShoppingListItem' }
+        '404':
+          description: No such item for the caller
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/Error' }
