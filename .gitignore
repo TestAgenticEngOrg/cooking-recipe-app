@@ -13,3 +13,7 @@ replay_pid*.log
 /recipe-api/target/
 /recipe-api/generated/
 /recipe-api/Config.toml
+
+# recipe-webapp (React / Vite)
+/recipe-webapp/node_modules/
+/recipe-webapp/dist/
