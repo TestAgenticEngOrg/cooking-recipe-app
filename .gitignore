@@ -8,3 +8,8 @@ replay_pid*.log
 # recipe-import-agent (TypeScript / Node)
 /recipe-import-agent/node_modules/
 /recipe-import-agent/dist/
+
+# recipe-api (Ballerina)
+/recipe-api/target/
+/recipe-api/generated/
+/recipe-api/Config.toml
