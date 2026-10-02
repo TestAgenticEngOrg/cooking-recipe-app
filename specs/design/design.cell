@@ -16,3 +16,5 @@ recipe-webapp -> cook-auth
 recipe-api -> cook-auth
 recipe-api -> recipe-db
 recipe-import-agent -> cook-auth
+
+# Re-synced with specs/requirements/prd.md (10 stories, single Cook actor) — no architectural change.
