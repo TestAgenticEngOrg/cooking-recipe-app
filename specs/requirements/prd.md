@@ -70,7 +70,7 @@ user's decision).
 Scope).
 - Photo: a Cook may attach one photo of the finished meal to a recipe; it's
 optional and purely illustrative, with no gallery or multi-photo support.
-*assumed*
+
 
 ## Out of Scope
 
