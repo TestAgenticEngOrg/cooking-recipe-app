@@ -1,0 +1,33 @@
+apiVersion: openchoreo.dev/v1alpha1
+metadata:
+  name: recipe-webapp
+
+endpoints:
+  - name: http
+    type: HTTP
+    port: 9090
+    basePath: /
+    visibility:
+      - project
+      - external
+
+dependencies:
+  endpoints:
+    - component: cooking-recipe-app-recipe-api
+      name: http
+      visibility: project
+      envBindings:
+        address: RECIPE_API_URL
+    - component: cooking-recipe-app-recipe-import-agent
+      name: http
+      visibility: project
+      envBindings:
+        address: RECIPE_IMPORT_AGENT_URL
+  resources:
+    - ref: cooking-recipe-ap-d9660326
+      envBindings:
+        client_id: COOK_AUTH_CLIENT_ID
+        issuer: COOK_AUTH_ISSUER
+        jwks_url: COOK_AUTH_JWKS_URL
+        resource: COOK_AUTH_RESOURCE
+        scopes: COOK_AUTH_SCOPES
