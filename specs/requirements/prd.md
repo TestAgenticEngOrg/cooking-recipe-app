@@ -43,6 +43,8 @@ what to cook each day.
 know what ingredients to buy.
 9. As a Cook, I want to check off items on my shopping list as I buy them, so
 that I can track my shopping progress.
+10. As a Cook, I want to upload a photo of the finished meal to its recipe,
+so that I can remember what it's supposed to look like.
 
 ## Product Decisions
 
@@ -66,6 +68,9 @@ fails fast with a clear error instead of a confusing agent failure (per the
 user's decision).
 - Serving-size scaling is not included (per the user's decision — see Out of
 Scope).
+- Photo: a Cook may attach one photo of the finished meal to a recipe; it's
+optional and purely illustrative, with no gallery or multi-photo support.
+*assumed*
 
 ## Out of Scope
 
